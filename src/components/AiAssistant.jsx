@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 const DIFY_CHAT_URL = "https://udify.app/chatbot/JOBAAZkyXD1idqEw";
 
@@ -6,13 +6,11 @@ export default function AiAssistant() {
   const [open, setOpen] = useState(false);
   const [shouldMount, setShouldMount] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  const idleTaskRef = useRef(null);
 
-  const warmUp = useMemo(
-    () => () => {
-      setShouldMount(true);
-    },
-    []
-  );
+  const warmUp = useCallback(() => {
+    setShouldMount(true);
+  }, []);
 
   useEffect(() => {
     const addLink = (rel, href, crossOrigin) => {
@@ -27,7 +25,43 @@ export default function AiAssistant() {
 
     addLink("preconnect", "https://udify.app", "anonymous");
     addLink("dns-prefetch", "https://udify.app");
-  }, []);
+
+    const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+    const canBackgroundWarm = !connection?.saveData && !["slow-2g", "2g"].includes(connection?.effectiveType || "");
+
+    if (!canBackgroundWarm) return undefined;
+
+    const scheduleWarm = () => {
+      if (shouldMount) return;
+      if ("requestIdleCallback" in window) {
+        idleTaskRef.current = window.requestIdleCallback(() => setShouldMount(true), { timeout: 5000 });
+      } else {
+        idleTaskRef.current = window.setTimeout(() => setShouldMount(true), 2800);
+      }
+    };
+
+    const triggerWarm = () => {
+      scheduleWarm();
+      window.removeEventListener("pointerdown", triggerWarm);
+      window.removeEventListener("scroll", triggerWarm);
+      window.removeEventListener("keydown", triggerWarm);
+    };
+
+    window.addEventListener("pointerdown", triggerWarm, { passive: true });
+    window.addEventListener("scroll", triggerWarm, { passive: true });
+    window.addEventListener("keydown", triggerWarm);
+
+    return () => {
+      window.removeEventListener("pointerdown", triggerWarm);
+      window.removeEventListener("scroll", triggerWarm);
+      window.removeEventListener("keydown", triggerWarm);
+      if ("cancelIdleCallback" in window && typeof idleTaskRef.current === "number") {
+        window.cancelIdleCallback(idleTaskRef.current);
+      } else if (idleTaskRef.current) {
+        window.clearTimeout(idleTaskRef.current);
+      }
+    };
+  }, [shouldMount]);
 
   return (
     <>
@@ -35,6 +69,7 @@ export default function AiAssistant() {
         onMouseEnter={warmUp}
         onFocus={warmUp}
         onTouchStart={warmUp}
+        onPointerDown={warmUp}
         onClick={() => {
           warmUp();
           setOpen((value) => !value);
@@ -87,7 +122,6 @@ export default function AiAssistant() {
               className={`ai-assistant-modal__frame${loaded ? " is-loaded" : ""}`}
               frameBorder="0"
               allow="microphone"
-              loading="lazy"
               onLoad={() => setLoaded(true)}
             />
           </div>
