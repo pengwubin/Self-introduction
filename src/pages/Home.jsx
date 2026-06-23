@@ -170,6 +170,8 @@ export default function Home() {
                   src="/个人照片-透明版.png"
                   alt={profile.name}
                   className="photo-reveal"
+                  decoding="async"
+                  fetchPriority="high"
                   style={{ width: "389px", aspectRatio: "3/4", objectFit: "cover" }}
                 />
                 <div className="photo-frame__caption">FIG. 01 · {profile.name} · {year}</div>
@@ -332,7 +334,7 @@ export default function Home() {
 
         <section id="experience" className="page-section relative">
           <div className="bg-photo-soft">
-            <img src="/guangzhou.jpg" alt="" className="bg-photo-soft__img" />
+            <img src="/guangzhou.jpg" alt="" className="bg-photo-soft__img" loading="lazy" decoding="async" />
             <div className="bg-photo-soft__overlay" />
           </div>
           <div className="container-page relative z-10">
@@ -406,7 +408,7 @@ export default function Home() {
 
         <section id="contact" className="page-section relative" style={{ paddingTop: "100px", paddingBottom: "100px" }}>
           <div className="bg-photo-soft">
-            <img src="/guangzhou.jpg" alt="" className="bg-photo-soft__img" />
+            <img src="/guangzhou.jpg" alt="" className="bg-photo-soft__img" loading="lazy" decoding="async" />
             <div className="bg-photo-soft__overlay" />
           </div>
           <div className="container-page relative z-10">

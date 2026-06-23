@@ -115,6 +115,8 @@ export default function ProjectDetail() {
                     <img
                       src={src}
                       alt={`${project.name} 图 ${index + 1}`}
+                      loading="lazy"
+                      decoding="async"
                       style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
                     />
                   </figure>

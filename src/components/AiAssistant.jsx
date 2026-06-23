@@ -27,19 +27,6 @@ export default function AiAssistant() {
 
     addLink("preconnect", "https://udify.app", "anonymous");
     addLink("dns-prefetch", "https://udify.app");
-
-    const idleWarm =
-      "requestIdleCallback" in window
-        ? window.requestIdleCallback(() => setShouldMount(true), { timeout: 1800 })
-        : window.setTimeout(() => setShouldMount(true), 1200);
-
-    return () => {
-      if ("cancelIdleCallback" in window && typeof idleWarm === "number") {
-        window.cancelIdleCallback(idleWarm);
-      } else {
-        window.clearTimeout(idleWarm);
-      }
-    };
   }, []);
 
   return (
@@ -100,6 +87,7 @@ export default function AiAssistant() {
               className={`ai-assistant-modal__frame${loaded ? " is-loaded" : ""}`}
               frameBorder="0"
               allow="microphone"
+              loading="lazy"
               onLoad={() => setLoaded(true)}
             />
           </div>
